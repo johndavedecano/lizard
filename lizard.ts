@@ -117,7 +117,7 @@ const createContext = (): LizardApp => {
         const { method, url } = req;
 
         logger(`Incoming request: ${method} ${url}`);
-        
+
         const route = matchRoute(method as RequestMethod, url, routes);
 
         if (route) {
