@@ -176,9 +176,6 @@ const createContext = (): LizardApp => {
         return new Response("Not Found", { status: 404 });
     }
 
-
-
-
     /**
      * Stops the server if it is running.
      * 
