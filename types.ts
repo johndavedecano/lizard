@@ -24,7 +24,7 @@ export type RequestEvent = {
     params?: Record<string, unknown>;
 }
 
-export type RequestCallback = (event: RequestEvent) => Promise<Response>
+export type RequestCallback<T = Response> = (event: RequestEvent) => Promise<T>
 
 export type RouteRegexType = ReturnType<typeof pathToReg.pathToRegexp>
 
