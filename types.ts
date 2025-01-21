@@ -11,6 +11,7 @@ export type LizardApp = {
     del: (route: string, callback: RequestCallback) => void;
     put: (route: string, callback: RequestCallback) => void;
     stop: () => void;
+    use: (middleware: Middleware) => void;
 }
 
 export type RequestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT';
@@ -29,9 +30,14 @@ export type RequestCallback<T = Response> = (event: RequestEvent) => Promise<T>
 
 export type RouteRegexType = ReturnType<typeof pathToReg.pathToRegexp>
 
+export type Middleware = (event: RequestEvent, next: () => Promise<Response>) => Promise<Response> | Response;
+
 export type Route = {
     method: RequestMethod;
     path: string;
     pathRegex: RouteRegexType;
     callback: RequestCallback;
+    middlewares: Middleware[];
 };
+
+export type RouteMatch = { params: Record<string, string>, handler: RequestCallback, query: Record<string, string>, middlewares: Middleware[] }

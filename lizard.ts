@@ -1,5 +1,5 @@
 import Bun from 'bun'
-import type { LizardApp, LizardVersion, RequestCallback, RequestEvent, RequestMethod, Route } from './types';
+import type { LizardApp, LizardVersion, Middleware, RequestCallback, RequestEvent, RequestMethod, Route, RouteMatch } from './types';
 import { matchRoute, pathToRegex } from './utils';
 
 
@@ -20,25 +20,36 @@ import { matchRoute, pathToRegex } from './utils';
  * - `put(path: string, callback: RequestCallback): void`: Registers a PUT route.
  * - `listen(port: number = 5000, callback?: () => void): void`: Starts the server on the specified port.
  * - `stop(): void`: Stops the server if it is running.
+ * - `use(middleware: Middleware): void`: Adds a middleware function to the global middlewares array.
  */
 const createContext = (): LizardApp => {
     const routes: Route[] = [];
+    const globalMiddlewares: Middleware[] = [];
 
     const logger = (message: string) => {
         const timestamp = new Date().toISOString();
         console.log(`[${timestamp}] ${message}`);
     };
 
+    /**
+     * Adds a middleware function to the global middlewares array.
+     *
+     * @param middleware - The middleware function to be added.
+     */
+    const use = (middleware: Middleware): void => {
+        globalMiddlewares.push(middleware);
+    };
 
     /**
      * Registers a new route.
      * @param {RequestMethod} method - The HTTP method (e.g., 'GET', 'POST').
      * @param {string} path - The route path (e.g., '/users/:id').
      * @param {RequestCallback} callback - The function to handle the route.
+     * @param {Middleware[]} middlewares - An array of middleware functions to apply to the route.
      */
-    const addRoute = (method: RequestMethod, path: string, callback: RequestCallback): void => {
+    const addRoute = (method: RequestMethod, path: string, callback: RequestCallback, middlewares: Middleware[] = []): void => {
         const pathRegex = pathToRegex(path);
-        routes.push({ method, path, pathRegex, callback });
+        routes.push({ method, path, pathRegex, callback, middlewares });
     };
 
 
@@ -47,9 +58,10 @@ const createContext = (): LizardApp => {
      *
      * @param path - The path for the GET route.
      * @param callback - The function to be called when the route is accessed.
+     * @param middlewares - An array of middleware functions to apply to the route.
      */
-    const get = (path: string, callback: RequestCallback): void => {
-        addRoute('GET', path, callback);
+    const get = (path: string, callback: RequestCallback, middlewares: Middleware[] = []): void => {
+        addRoute('GET', path, callback, middlewares);
     }
 
     /**
@@ -57,9 +69,10 @@ const createContext = (): LizardApp => {
      *
      * @param path - The path for the POST route.
      * @param callback - The function to be called when the route is accessed.
+     * @param middlewares - An array of middleware functions to apply to the route.
      */
-    const post = (path: string, callback: RequestCallback): void => {
-        addRoute('POST', path, callback);
+    const post = (path: string, callback: RequestCallback, middlewares: Middleware[] = []): void => {
+        addRoute('POST', path, callback, middlewares);
     }
 
     /**
@@ -67,9 +80,10 @@ const createContext = (): LizardApp => {
      *
      * @param path - The URL path for the PATCH route.
      * @param callback - The function to handle the PATCH request.
+     * @param middlewares - An array of middleware functions to apply to the route.
      */
-    const patch = (path: string, callback: RequestCallback): void => {
-        addRoute('PATCH', path, callback);
+    const patch = (path: string, callback: RequestCallback, middlewares: Middleware[] = []): void => {
+        addRoute('PATCH', path, callback, middlewares);
     }
 
     /**
@@ -77,9 +91,10 @@ const createContext = (): LizardApp => {
      *
      * @param path - The path for the DELETE route.
      * @param callback - The callback function to handle the DELETE request.
+     * @param middlewares - An array of middleware functions to apply to the route.
      */
-    const del = (path: string, callback: RequestCallback): void => {
-        addRoute('DELETE', path, callback);
+    const del = (path: string, callback: RequestCallback, middlewares: Middleware[] = []): void => {
+        addRoute('DELETE', path, callback, middlewares);
     }
 
 
@@ -88,9 +103,10 @@ const createContext = (): LizardApp => {
      *
      * @param path - The path for the PUT route.
      * @param callback - The function to be executed when the route is accessed.
+     * @param middlewares - An array of middleware functions to apply to the route.
      */
-    const put = (path: string, callback: RequestCallback): void => {
-        addRoute('PUT', path, callback);
+    const put = (path: string, callback: RequestCallback, middlewares: Middleware[] = []): void => {
+        addRoute('PUT', path, callback, middlewares);
     }
 
     /**
@@ -118,7 +134,7 @@ const createContext = (): LizardApp => {
 
         logger(`Incoming request: ${method} ${url}`);
 
-        const route = matchRoute(method as RequestMethod, url, routes);
+        const route: RouteMatch | null = matchRoute(method as RequestMethod, url, routes);
 
         if (route) {
             const event: RequestEvent = {
@@ -153,8 +169,17 @@ const createContext = (): LizardApp => {
                 event.files = files;
             }
 
+            const applyMiddlewares = async (middlewares: Middleware[], index: number): Promise<Response> => {
+                if (index < middlewares.length) {
+                    return middlewares[index](event, () => applyMiddlewares(middlewares, index + 1));
+                } else {
+                    return route.handler(event);
+                }
+            };
+
             try {
-                return await route.handler(event);
+                const allMiddlewares = [...globalMiddlewares, ...route.middlewares];
+                return await applyMiddlewares(allMiddlewares, 0);
             } catch (error) {
                 logger(`Error handling request: ${error}`);
                 return new Response("Internal Server Error", { status: 500 });
@@ -188,6 +213,7 @@ const createContext = (): LizardApp => {
 
     return {
         version: Lizard.version,
+        use,
         get,
         post,
         patch,

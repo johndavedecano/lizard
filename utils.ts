@@ -1,4 +1,4 @@
-import type { RequestCallback, RequestMethod, Route, RouteRegexType } from "./types";
+import type { Middleware, RequestCallback, RequestMethod, Route, RouteMatch, RouteRegexType } from "./types";
 
 import pathToReg from 'path-to-regexp';
 
@@ -27,7 +27,7 @@ export const parseUrl = (url: string): URL => {
  * @param {Route[]} routes - The registered routes.
  * @returns {object|null} - The matched route, or null if no match.
  */
-export const matchRoute = (method: RequestMethod, url: string, routes: Route[]): { params: Record<string, string>, handler: RequestCallback, query: Record<string, string> } | null => {
+export const matchRoute = (method: RequestMethod, url: string, routes: Route[]): RouteMatch | null => {
     const urlObj = parseUrl(url);
     const path = urlObj.pathname;
     const queryString = urlObj.search.slice(1); // Remove the leading '?'
@@ -48,6 +48,7 @@ export const matchRoute = (method: RequestMethod, url: string, routes: Route[]):
                     params: params || {},
                     handler: route.callback,
                     query: queryString ? Object.fromEntries(new URLSearchParams(queryString)) : {},
+                    middlewares: route.middlewares ?? []
                 };
             }
         }

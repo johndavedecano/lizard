@@ -72,6 +72,20 @@ app.post('/user', async (event) => {
 app.listen(3000);
 ```
 
+```ts
+// Middleware example to log request details
+app.use(async (event, next) => {
+    console.log(`Request: ${event.request.method} ${event.request.url}`);
+    return next(event);
+});
+
+// Middleware example to add a custom header to the response
+app.use(async (event, next) => {
+    const response = await next(event);
+    response.headers.set("X-Custom-Header", "LizardFramework");
+    return response;
+});
+```
 ## License
 
 This project is licensed under the MIT License.
