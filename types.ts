@@ -22,6 +22,7 @@ export type RequestEvent = {
     body?: Record<string, unknown>;
     query?: Record<string, unknown>;
     params?: Record<string, unknown>;
+    files?: Record<string, File>;
 }
 
 export type RequestCallback<T = Response> = (event: RequestEvent) => Promise<T>

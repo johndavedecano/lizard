@@ -41,7 +41,7 @@ const createContext = (): LizardApp => {
         routes.push({ method, path, pathRegex, callback });
     };
 
-    
+
     /**
      * Registers a GET route with the specified path and callback function.
      *
@@ -81,7 +81,7 @@ const createContext = (): LizardApp => {
     const del = (path: string, callback: RequestCallback): void => {
         addRoute('DELETE', path, callback);
     }
-    
+
 
     /**
      * Registers a PUT route with the specified path and callback function.
@@ -138,7 +138,19 @@ const createContext = (): LizardApp => {
                 event.body = Object.fromEntries((formData as any).entries());
             } else if (contentType?.includes('multipart/form-data')) {
                 const formData = await req.formData();
-                event.body = Object.fromEntries((formData as any).entries());
+                const files: Record<string, File> = {};
+                const fields: Record<string, string> = {};
+
+                formData.forEach((value, key) => {
+                    if (value instanceof File) {
+                        files[key] = value;
+                    } else {
+                        fields[key] = value as string;
+                    }
+                });
+
+                event.body = fields;
+                event.files = files;
             }
 
             try {
@@ -155,7 +167,7 @@ const createContext = (): LizardApp => {
 
     let server: ReturnType<typeof Bun.serve> | null = null;
 
-    
+
     /**
      * Stops the server if it is running.
      * 
