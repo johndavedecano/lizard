@@ -4,6 +4,7 @@ export type LizardVersion = `${number}.${number}.${number}`;
 
 export type LizardApp = {
     version: LizardVersion;
+    locals: Map<string, unknown>;
     listen: (port: number, callback?: () => void) => void;
     get: (route: string, callback: RequestCallback) => void;
     post: (route: string, callback: RequestCallback) => void;
@@ -17,13 +18,15 @@ export type LizardApp = {
 export type RequestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT';
 
 export type RequestEvent = {
-    method: RequestMethod;
     url: string;
+    method: RequestMethod;
+    request: Request;
     headers?: Headers;
-    body?: Record<string, unknown>;
-    query?: Record<string, unknown>;
-    params?: Record<string, unknown>;
-    files?: Record<string, File>;
+    params?: Record<string, string>;
+    query?: Record<string, string>;
+    clientIp?: string;
+    locals: Map<string, unknown>;
+
 }
 
 export type RequestCallback<T = Response> = (event: RequestEvent) => Promise<T>

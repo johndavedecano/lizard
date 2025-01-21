@@ -13,6 +13,7 @@ import { matchRoute, pathToRegex } from './utils';
  *
  * The returned object includes the following properties and methods:
  * - `version`: The version of the Lizard application.
+ * - `locals`: A map of local variables that can be accessed by middleware functions.
  * - `get(path: string, callback: RequestCallback): void`: Registers a GET route.
  * - `post(path: string, callback: RequestCallback): void`: Registers a POST route.
  * - `patch(path: string, callback: RequestCallback): void`: Registers a PATCH route.
@@ -23,8 +24,14 @@ import { matchRoute, pathToRegex } from './utils';
  * - `use(middleware: Middleware): void`: Adds a middleware function to the global middlewares array.
  */
 const createContext = (): LizardApp => {
+
+    let server: ReturnType<typeof Bun.serve> | null = null;
+
     const routes: Route[] = [];
+
     const globalMiddlewares: Middleware[] = [];
+
+    const locals = new Map<string, unknown>();
 
     const logger = (message: string) => {
         const timestamp = new Date().toISOString();
@@ -137,37 +144,16 @@ const createContext = (): LizardApp => {
         const route: RouteMatch | null = matchRoute(method as RequestMethod, url, routes);
 
         if (route) {
+            const clientIp = server?.requestIP(req)?.toString();
             const event: RequestEvent = {
-                method: method as RequestMethod,
                 url,
-                headers: req.headers ?? {},
+                method: method as RequestMethod,
+                request: req,
                 params: route.params,
-                query: route.query
+                query: route.query,
+                clientIp,
+                locals,
             };
-
-            const contentType = req.headers.get('content-type');
-
-            if (contentType?.includes('application/json')) {
-                event.body = await req.json();
-            } else if (contentType?.includes('application/x-www-form-urlencoded')) {
-                const formData = await req.formData();
-                event.body = Object.fromEntries((formData as any).entries());
-            } else if (contentType?.includes('multipart/form-data')) {
-                const formData = await req.formData();
-                const files: Record<string, File> = {};
-                const fields: Record<string, string> = {};
-
-                formData.forEach((value, key) => {
-                    if (value instanceof File) {
-                        files[key] = value;
-                    } else {
-                        fields[key] = value as string;
-                    }
-                });
-
-                event.body = fields;
-                event.files = files;
-            }
 
             const applyMiddlewares = async (middlewares: Middleware[], index: number): Promise<Response> => {
                 if (index < middlewares.length) {
@@ -190,7 +176,7 @@ const createContext = (): LizardApp => {
         return new Response("Not Found", { status: 404 });
     }
 
-    let server: ReturnType<typeof Bun.serve> | null = null;
+
 
 
     /**
@@ -213,6 +199,7 @@ const createContext = (): LizardApp => {
 
     return {
         version: Lizard.version,
+        locals,
         use,
         get,
         post,
