@@ -30,6 +30,7 @@ export type RequestEvent = {
     query?: Record<string, string>
     clientIp?: string
     locals: Map<string, unknown>
+    configs: Map<string, unknown>
     response: ResponseBuilder
 }
 
