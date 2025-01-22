@@ -224,15 +224,29 @@ const createContext = (): LizardApp => {
     const stop = () => server && server.stop()
 
     /**
+     * Checks if the application is running in development mode.
+     *
+     * @returns {boolean} - `true` if the application is running in development mode; otherwise, `false
+     */
+    const isDevelopment = (): boolean => {
+        return process.env.NODE_ENV === 'development' || configs.get('NODE_ENV') === 'development'
+    }
+
+    /**
      * Starts the server and listens on the specified port.
      *
      * @param {number} [port=5000] - The port number on which the server should listen. Defaults to 5000 if not provided.
      * @param {() => void} [callback] - An optional callback function that is invoked once the server starts listening.
      */
-    const listen = (port: number = 5000, callback?: () => void) => {
+    const listen = (port?: number, callback?: () => void) => {
         logger(`Server is listening on port ${port}`)
 
+        if (!port) port = (configs.get('PORT') as number) ?? 5000
+
+        const development = isDevelopment()
+
         server = Bun.serve({
+            development,
             port,
             fetch,
         })

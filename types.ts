@@ -9,7 +9,7 @@ export type LizardApp = {
     locals: Map<string, unknown>
     configs: Map<string, unknown>
     config: (newConfigs: Record<string, unknown>) => void
-    listen: (port: number, callback?: () => void) => void
+    listen: (port?: number, callback?: () => void) => void
     get: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void
     post: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void
     patch: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void
