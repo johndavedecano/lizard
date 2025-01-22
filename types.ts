@@ -1,16 +1,18 @@
 import pathToReg from 'path-to-regexp';
 
+import type ResponseBuilder from './response';
+
 export type LizardVersion = `${number}.${number}.${number}`;
 
 export type LizardApp = {
     version: LizardVersion;
     locals: Map<string, unknown>;
     listen: (port: number, callback?: () => void) => void;
-    get: (route: string, callback: RequestCallback) => void;
-    post: (route: string, callback: RequestCallback) => void;
-    patch: (route: string, callback: RequestCallback) => void;
-    del: (route: string, callback: RequestCallback) => void;
-    put: (route: string, callback: RequestCallback) => void;
+    get: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void;
+    post: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void;
+    patch: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void;
+    del: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void;
+    put: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void;
     stop: () => void;
     use: (middleware: Middleware) => void;
 }
@@ -26,7 +28,7 @@ export type RequestEvent = {
     query?: Record<string, string>;
     clientIp?: string;
     locals: Map<string, unknown>;
-
+    response: ResponseBuilder;
 }
 
 export type RequestCallback<T = Response> = (event: RequestEvent) => Promise<T>

@@ -54,106 +54,62 @@ Here is an example of how to define routes in your application:
 
 ```ts
 import Lizard from "./lizard";
+import type { Middleware } from "./types";
 
 const app = Lizard.create();
 
+// Global middleware to log requests
+const loggerMiddleware: Middleware = async (event, next) => {
+	console.log(`Request: ${event.method} ${event.url}`);
+	return next();
+};
+
+// Global middleware to add a custom header
+const headerMiddleware: Middleware = async (event, next) => {
+	event.response.headers.set('X-Custom-Header', 'Lizard');
+	return next();
+};
+
+// Apply global middlewares
+app.use(loggerMiddleware);
+app.use(headerMiddleware);
+
 app.get('/', async (event) => {
-    return new Response("Home Page", { status: 200 });
+	return event.response.send("Hello, World!");
 });
 
-app.get('/user/:id', async (event) => {
-    return new Response(`User ${event.params?.id}`, { status: 200 });
+app.get('/home', async (event) => {
+	return event.response.send("Home Page");
+});
+
+app.get('/home/:id', async (event) => {
+	return event.response.send("Home Page" + event.params?.id);
+});
+
+app.get('/home/:id', async (event) => {
+	return event.response.send(`User ${event.params?.id}`);
+});
+
+app.get('/home/:id', async (event) => {
+	return event.response.send(`User ${event.params?.id}`);
+});
+
+app.get('/home/:id/profile', async (event) => {
+	return event.response.send(`User ${event.params?.id} Profile`);
 });
 
 app.post('/user', async (event) => {
-    return new Response("User Created", { status: 200 });
+	return event.response.send("User Created");
 });
 
-app.listen(3000);
-```
-
-```ts
-// Middleware example to log request details
-app.use(async (event, next) => {
-    console.log(`Request: ${event.request.method} ${event.request.url}`);
-    return next(event);
+app.put('/user/:id', async (event) => {
+	return event.response.send(`User ${event.params?.id} Updated`);
 });
 
-// Middleware example to add a custom header to the response
-app.use(async (event, next) => {
-    const response = await next(event);
-    response.headers.set("X-Custom-Header", "LizardFramework");
-    return response;
-});
-```
-
-## Handling Request JSON, Form Data, and Files
-
-Lizard provides easy-to-use methods for handling JSON, form data, and file uploads in your routes.
-
-### Handling JSON
-
-To handle JSON data in your routes, use the `event.request.json()` method:
-
-```ts
-app.post('/json', async (event) => {
-    const data = await event.request.json();
-    return new Response(`Received JSON: ${JSON.stringify(data)}`, { status: 200 });
-});
-```
-
-### Handling Form Data
-
-To handle form data, use the `event.request.formData()` method:
-
-```ts
-app.post('/form', async (event) => {
-    const formData = await event.request.formData();
-    const name = formData.get('name');
-    return new Response(`Received Form Data: ${name}`, { status: 200 });
-});
-```
-
-### Handling File Uploads
-
-To handle file uploads, use the `event.request.formData()` method and access the file from the form data:
-
-```ts
-app.post('/upload', async (event) => {
-    const formData = await event.request.formData();
-    const file = formData.get('file') as File;
-    const fileContents = await file.text();
-    return new Response(`Received File: ${file.name} with contents: ${fileContents}`, { status: 200 });
-});
-```
-
-In these examples, the routes handle different types of request data and respond accordingly.
-
-
-## Handling Local Variables
-
-Lizard allows you to define and use local variables within your routes and middleware. This can be useful for sharing data between different parts of your application.
-
-### Example Usage
-
-Here is an example of how to set and access local variables in your application:
-
-```ts
-import Lizard from "./lizard";
-
-const app = Lizard.create();
-
-// Middleware to set a local variable
-app.use(async (event, next) => {
-    event.locals.user = { id: 1, name: "John Doe" };
-    return next(event);
+app.del('/user/:id', async (event) => {
+	return event.response.send(`User ${event.params?.id} Deleted`);
 });
 
-// Route to access the local variable
-app.get('/profile', async (event) => {
-    const user = event.locals.user;
-    return new Response(`User Profile: ${user.name}`, { status: 200 });
-});
 
 app.listen(3000);
 ```

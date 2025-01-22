@@ -1,6 +1,7 @@
 import Bun from 'bun'
 import type { LizardApp, LizardVersion, Middleware, RequestCallback, RequestEvent, RequestMethod, Route, RouteMatch } from './types';
 import { matchRoute, pathToRegex } from './utils';
+import ResponseBuilder from './response';
 
 
 /**
@@ -104,7 +105,6 @@ const createContext = (): LizardApp => {
         addRoute('DELETE', path, callback, middlewares);
     }
 
-
     /**
      * Registers a PUT route with the specified path and callback function.
      *
@@ -153,6 +153,7 @@ const createContext = (): LizardApp => {
                 query: route.query,
                 clientIp,
                 locals,
+                response: new ResponseBuilder()
             };
 
             const applyMiddlewares = async (middlewares: Middleware[], index: number): Promise<Response> => {
