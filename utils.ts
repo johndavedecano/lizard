@@ -1,6 +1,6 @@
-import type { RequestMethod, Route, RouteMatch, RouteRegexType } from "./types";
+import type { RequestMethod, Route, RouteMatch, RouteRegexType } from './types'
 
-import pathToReg from 'path-to-regexp';
+import pathToReg from 'path-to-regexp'
 
 /**
  * Converts a route path to a regular expression.
@@ -8,8 +8,8 @@ import pathToReg from 'path-to-regexp';
  * @returns {RegExp} - A regular expression to match the route.
  */
 export const pathToRegex = (path: string): RouteRegexType => {
-    return pathToReg.pathToRegexp(path);
-};
+    return pathToReg.pathToRegexp(path)
+}
 
 /**
  * Parses a URL string and returns a URL object.
@@ -18,10 +18,10 @@ export const pathToRegex = (path: string): RouteRegexType => {
  */
 export const parseUrl = (url: string): URL => {
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = `http://${url}`; // Add a protocol if one is
+        url = `http://${url}` // Add a protocol if one is
     }
-    return new URL(url, 'http://dummy-base'); // Use a dummy base to ensure the URL is parsed correctly
-};
+    return new URL(url, 'http://dummy-base') // Use a dummy base to ensure the URL is parsed correctly
+}
 
 /**
  * Matches a request to the registered routes.
@@ -31,33 +31,33 @@ export const parseUrl = (url: string): URL => {
  * @returns {object|null} - The matched route, or null if no match.
  */
 export const matchRoute = (method: RequestMethod, url: string, routes: Route[]): RouteMatch | null => {
-    const urlObj = parseUrl(url);
-    const path = urlObj.pathname;
-    const queryString = urlObj.search.slice(1); // Remove the leading '?'
+    const urlObj = parseUrl(url)
+    const path = urlObj.pathname
+    const queryString = urlObj.search.slice(1) // Remove the leading '?'
 
     for (const route of routes) {
         if (route.method === method) {
-            const match = route.pathRegex.regexp.exec(path);
+            const match = route.pathRegex.regexp.exec(path)
             const params = match?.slice(1).reduce((acc, value, index) => {
-                const key = route.pathRegex.keys[index];
+                const key = route.pathRegex.keys[index]
                 if (key) {
-                    acc[key.name] = value;
+                    acc[key.name] = value
                 }
-                return acc;
-            }, {} as Record<string, string>);
+                return acc
+            }, {} as Record<string, string>)
 
             if (match) {
                 return {
                     params: params || {},
                     handler: route.callback,
                     query: queryString ? Object.fromEntries(new URLSearchParams(queryString)) : {},
-                    middlewares: route.middlewares ?? []
-                };
+                    middlewares: route.middlewares ?? [],
+                }
             }
         }
     }
-    return null;
-};
+    return null
+}
 
 /**
  * Parses a query string into an object.
@@ -66,8 +66,6 @@ export const matchRoute = (method: RequestMethod, url: string, routes: Route[]):
  */
 export const parseQuery = (queryString: string): Record<string, string> => {
     return queryString
-        ? Object.fromEntries(
-            queryString.split('&').map((pair) => pair.split('=').map(decodeURIComponent))
-        )
-        : {};
-};
+        ? Object.fromEntries(queryString.split('&').map(pair => pair.split('=').map(decodeURIComponent)))
+        : {}
+}

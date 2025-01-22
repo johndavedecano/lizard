@@ -5,25 +5,25 @@ class ResponseBuilder {
     /**
      * The HTTP status code of the response.
      */
-    public statusCode: number;
+    public statusCode: number
 
     /**
      * The HTTP status text of the response.
      */
-    public statusText: string;
+    public statusText: string
 
     /**
      * The HTTP headers of the response.
      */
-    public headers: Headers;
+    public headers: Headers
 
     /**
      * Constructs a new ResponseBuilder with default values.
      */
     constructor() {
-        this.statusCode = 200;
-        this.statusText = 'OK';
-        this.headers = new Headers();
+        this.statusCode = 200
+        this.statusText = 'OK'
+        this.headers = new Headers()
     }
 
     /**
@@ -33,10 +33,10 @@ class ResponseBuilder {
      */
     setStatusText(text: string): ResponseBuilder {
         if (!text) {
-            throw new Error('Status text cannot be empty');
+            throw new Error('Status text cannot be empty')
         }
-        this.statusText = text;
-        return this;
+        this.statusText = text
+        return this
     }
 
     /**
@@ -46,10 +46,10 @@ class ResponseBuilder {
      */
     status(code: number): ResponseBuilder {
         if (code < 100 || code > 599) {
-            throw new Error('Invalid status code');
+            throw new Error('Invalid status code')
         }
-        this.statusCode = code;
-        return this;
+        this.statusCode = code
+        return this
     }
 
     /**
@@ -60,10 +60,10 @@ class ResponseBuilder {
      */
     header(key: string, value: string): ResponseBuilder {
         if (!key || !value) {
-            throw new Error('Header key and value cannot be empty');
+            throw new Error('Header key and value cannot be empty')
         }
-        this.headers.set(key, value);
-        return this;
+        this.headers.set(key, value)
+        return this
     }
 
     /**
@@ -72,8 +72,8 @@ class ResponseBuilder {
      * @returns A Response object with the specified JSON data.
      */
     json(data: unknown): Response {
-        this.headers.set('Content-Type', 'application/json');
-        return new Response(JSON.stringify(data), { status: this.statusCode, headers: this.headers });
+        this.headers.set('Content-Type', 'application/json')
+        return new Response(JSON.stringify(data), { status: this.statusCode, headers: this.headers })
     }
 
     /**
@@ -82,7 +82,7 @@ class ResponseBuilder {
      * @returns A Response object with the specified plain text data.
      */
     send(data: string): Response {
-        return new Response(data, { status: this.statusCode, headers: this.headers });
+        return new Response(data, { status: this.statusCode, headers: this.headers })
     }
 
     /**
@@ -91,8 +91,8 @@ class ResponseBuilder {
      * @returns A Response object with the specified HTML data.
      */
     html(data: string): Response {
-        this.headers.set('Content-Type', 'text/html');
-        return new Response(data, { status: this.statusCode, headers: this.headers });
+        this.headers.set('Content-Type', 'text/html')
+        return new Response(data, { status: this.statusCode, headers: this.headers })
     }
 
     /**
@@ -101,9 +101,9 @@ class ResponseBuilder {
      * @returns A Response object with the specified plain text data.
      */
     text(data: string): Response {
-        this.headers.set('Content-Type', 'text/plain');
-        return new Response(data, { status: this.statusCode, headers: this.headers });
+        this.headers.set('Content-Type', 'text/plain')
+        return new Response(data, { status: this.statusCode, headers: this.headers })
     }
 }
 
-export default ResponseBuilder;
+export default ResponseBuilder
