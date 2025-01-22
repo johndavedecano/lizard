@@ -1,4 +1,4 @@
-import type { Middleware, RequestCallback, RequestMethod, Route, RouteMatch, RouteRegexType } from "./types";
+import type { RequestMethod, Route, RouteMatch, RouteRegexType } from "./types";
 
 import pathToReg from 'path-to-regexp';
 
@@ -17,6 +17,9 @@ export const pathToRegex = (path: string): RouteRegexType => {
  * @returns {URL} - The parsed URL object.
  */
 export const parseUrl = (url: string): URL => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = `http://${url}`; // Add a protocol if one is
+    }
     return new URL(url, 'http://dummy-base'); // Use a dummy base to ensure the URL is parsed correctly
 };
 
