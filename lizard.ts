@@ -87,7 +87,6 @@ const createContext = (): LizardApp => {
         routes.push({ method, path, pathRegex, callback, middlewares });
     };
 
-
     /**
      * Registers a GET route with the specified path and callback function.
      *
@@ -210,7 +209,6 @@ const createContext = (): LizardApp => {
      * This function checks if the `server` object exists and, if so, calls its `stop` method to halt the server.
      */
     const stop = () => server && server.stop();
-
 
     /**
      * Starts the server and listens on the specified port.
