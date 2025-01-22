@@ -15,6 +15,8 @@ import ResponseBuilder from './response';
  * The returned object includes the following properties and methods:
  * - `version`: The version of the Lizard application.
  * - `locals`: A map of local variables that can be accessed by middleware functions.
+ * - `configs`: A map of configuration values that can be set using the `config` method.
+ * - `config(newConfigs: Record<string, unknown>): void`: Merges the provided configuration object into the configs map.
  * - `get(path: string, callback: RequestCallback): void`: Registers a GET route.
  * - `post(path: string, callback: RequestCallback): void`: Registers a POST route.
  * - `patch(path: string, callback: RequestCallback): void`: Registers a PATCH route.
@@ -34,9 +36,34 @@ const createContext = (): LizardApp => {
 
     const locals = new Map<string, unknown>();
 
+    const configs = new Map<string, unknown>();
+
+    /**
+     * Logs a message with a timestamp.
+     *
+     * @param message - The message to log.
+     */
     const logger = (message: string) => {
         const timestamp = new Date().toISOString();
         console.log(`[${timestamp}] ${message}`);
+    };
+
+    /**
+     * Merges the provided configuration object into the configs map.
+     *
+     * This function accepts an object with only uppercase keys and unknown values,
+     * and merges its properties into the existing configs map.
+     *
+     * @param {Record<string, unknown>} newConfigs - The configuration object to be merged.
+     * @throws {Error} If any key in the newConfigs object is not uppercase.
+     */
+    const config = (newConfigs: Record<string, unknown>): void => {
+        for (const key in newConfigs) {
+            if (key !== key.toUpperCase()) {
+                throw new Error(`Config key "${key}" must be uppercase.`);
+            }
+            configs.set(key, newConfigs[key]);
+        }
     };
 
     /**
@@ -184,6 +211,13 @@ const createContext = (): LizardApp => {
      */
     const stop = () => server && server.stop();
 
+
+    /**
+     * Starts the server and listens on the specified port.
+     *
+     * @param {number} [port=5000] - The port number on which the server should listen. Defaults to 5000 if not provided.
+     * @param {() => void} [callback] - An optional callback function that is invoked once the server starts listening.
+     */
     const listen = (port: number = 5000, callback?: () => void) => {
         logger(`Server is listening on port ${port}`);
 
@@ -198,6 +232,8 @@ const createContext = (): LizardApp => {
     return {
         version: Lizard.version,
         locals,
+        configs,
+        config,
         use,
         get,
         post,
@@ -212,8 +248,12 @@ const createContext = (): LizardApp => {
 class Lizard {
     static version: LizardVersion = '1.0.0';
 
-    static create(): LizardApp {
-        return createContext();
+    static create(config?: Record<string, unknown>): LizardApp {
+        const context = createContext();
+
+        if (config) context.config(config);
+
+        return context;
     }
 }
 

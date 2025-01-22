@@ -7,6 +7,8 @@ export type LizardVersion = `${number}.${number}.${number}`;
 export type LizardApp = {
     version: LizardVersion;
     locals: Map<string, unknown>;
+    configs: Map<string, unknown>;
+    config: (newConfigs: Record<string, unknown>) => void;
     listen: (port: number, callback?: () => void) => void;
     get: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void;
     post: (route: string, callback: RequestCallback, middlewares?: Middleware[]) => void;
