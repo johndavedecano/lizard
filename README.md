@@ -1,6 +1,6 @@
 # Lizard
 
-Lizard is a lightweight and fast web framework built on top of [Bun](https://bun.sh), a fast all-in-one JavaScript runtime. This project provides a simple and efficient way to create web applications with minimal setup.
+Lizard is a lightweight wrapper on top of [Bun](https://bun.sh), a fast all-in-one JavaScript runtime. This project provides a simple and efficient way to create web applications with minimal setup.
 
 ## Features
 
