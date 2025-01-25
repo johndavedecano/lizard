@@ -181,6 +181,8 @@ const createContext = (): LizardApp => {
 
         const route: RouteMatch | null = matchRoute(method as RequestMethod, url, routes)
 
+        const response = new ResponseBuilder()
+
         if (route) {
             const clientIp = server?.requestIP(req)?.toString()
             const event: RequestEvent = {
@@ -192,7 +194,7 @@ const createContext = (): LizardApp => {
                 clientIp,
                 locals,
                 configs,
-                response: new ResponseBuilder(),
+                response,
             }
 
             const applyMiddlewares = async (middlewares: Middleware[], index: number): Promise<Response> => {
@@ -208,12 +210,12 @@ const createContext = (): LizardApp => {
                 return await applyMiddlewares(allMiddlewares, 0)
             } catch (error) {
                 logger(`Error handling request: ${error}`)
-                return new Response('Internal Server Error', { status: 500 })
+                return event.response.status(500).send('Internal Server Error')
             }
         }
 
         logger(`404 Not Found: ${method} ${url}`)
-        return new Response('Not Found', { status: 404 })
+        return response.status(404).send('Not Found')
     }
 
     /**
