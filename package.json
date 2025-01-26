@@ -1,8 +1,16 @@
 {
   "name": "lizard",
-  "module": "index.ts",
   "type": "module",
+  "description": "Lizard is a lightweight wrapper on top of [Bun](https://bun.sh), a fast all-in-one JavaScript runtime.",
   "version": "1.0.0",
+  "module": "lizard.ts",
+  "main": "dist/lizard.js",
+  "types": "dist/lizard.d.ts",
+  "scripts": {
+    "build": "bun build --target=node ./lizard.ts --outfile=dist/lizard.js && bun run build:declaration",
+    "build:declaration": "tsc --emitDeclarationOnly",
+    "postbuild": "rimraf tsconfig.types.tsbuildinfo"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -10,6 +18,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "path-to-regexp": "^8.2.0"
+    "path-to-regexp": "^8.2.0",
+    "rimraf": "^6.0.1"
   }
 }

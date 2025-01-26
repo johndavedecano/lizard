@@ -1,4 +1,3 @@
-import Bun from 'bun'
 import type {
     LizardApp,
     LizardVersion,
